@@ -39,6 +39,15 @@ class DataLoader:
   def __init__(self, token):
     self.token = token
 
+  def remove_non_trading_days(self, df):
+    # remove non trading days
+    trade_calendar = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../util-data/trade-calendar.csv'), names=['date', 'is_holiday'])
+    # convert date string from '%Y-%m-%d' to '%m/%d/%Y' string
+    trade_calendar['date'] = trade_calendar['date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d').strftime('%m/%d/%Y'))
+    # remove non trading days
+    df = df[~df['date'].isin(trade_calendar[trade_calendar['is_holiday'] == 1]['date'])]
+    return df
+
   def load_by_ticker(self, ticker, ticker_type, instrument_service: InstrumentsService):
     print(f'Loading {ticker} {ticker_type} data')
     figi = instrument_service.find_figi_by_ticker(ticker, ticker_type)
@@ -71,7 +80,7 @@ class DataLoader:
       # remove ticker file
       os.remove(self.get_ticker_path(ticker, ticker_type))
       # save data to ticker file
-      data.to_csv(
+      self.remove_non_trading_days(data).to_csv(
         self.get_ticker_path(ticker, ticker_type), 
         index=False,
         columns=['date', 'time', 'open', 'close', 'high', 'low', 'volume'],
@@ -79,7 +88,7 @@ class DataLoader:
       )
     else:
       df = self.download_all_data(figi).drop_duplicates(subset=['date', 'time'], keep='last')
-      df.to_csv(
+      self.remove_non_trading_days(df).to_csv(
         self.get_ticker_path(ticker, ticker_type), 
         index=False,
         columns=['date', 'time', 'open', 'close', 'high', 'low', 'volume'],
