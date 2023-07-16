@@ -8,11 +8,6 @@ import os, json, requests as req, zipfile, gzip
 def get_current_year():
   return datetime.now().year
 
-def is_gz_file(filepath):
-  with open(filepath, 'rb') as test_f:
-    return test_f.read(2) == b'\x1f\x8b'
-
-
 class InstrumentsService:
   def __init__(self, token):
     self.token = token
@@ -36,29 +31,9 @@ class InstrumentsService:
       df = pd.DataFrame(l)
 
       self.instruments = df
-      # print(df[df["type"] == "futures"].head(5))
-      # print(df[df["ticker"] == "VIQ3"].head(5))
-      # print(len(df))
 
   def find_figi_by_ticker(self, ticker, ticker_type):
     return self.instruments[(self.instruments["ticker"] == ticker) & (self.instruments["type"] == ticker_type)].iloc[0]["figi"]
-
-# class TickerMetadata:
-#   def __init__(self, ticker, json):
-#     self.json = json
-#     self.last_candle = json['last_candle']
-#     self.type = json['type']
-#     self.ticker = ticker
-
-# class FolderMetadata:
-#   def __init__(self, json):
-#     self.json = json
-  
-#   def get_ticker_metadata(self, ticker):
-#     try:
-#       return TickerMetadata(ticker, self.json[ticker])
-#     except KeyError:
-#       return None
 
 class DataLoader:
   def __init__(self, token):
@@ -213,27 +188,7 @@ class DataLoader:
 
   def check_ticker_existance(self, ticker, ticker_type):
     data_path = self.get_ticker_path(ticker, ticker_type)
-    return os.path.exists(data_path)
-  
-
-
-  # def get_chosen_folder_metadata(self):
-  #   folder = LocalStorage.get_local_storage().get('folder_path')
-  #   check_file = os.path.join(folder, self.METADATAFILE)
-  #   if os.path.exists(check_file):
-  #     with open(check_file, 'r') as f:
-  #       return FolderMetadata(json.load(f))
-  #   else:
-  #     json.dump({}, open(check_file, 'w'))
-  #     return FolderMetadata({})
-  
-  # def save_chosen_folder_metadata(self, metadata: FolderMetadata):
-  #   folder = LocalStorage.get_local_storage().get('folder_path')
-  #   check_file = os.path.join(folder, self.METADATAFILE)
-  #   with open(check_file, 'w') as f:
-  #     json.dump(metadata.json, f)
-
-  
+    return os.path.exists(data_path) 
 
 class TinkoffApi:
   def __init__(self):
