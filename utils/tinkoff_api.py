@@ -214,8 +214,6 @@ class InstrumentsService:
       for method in ['shares', 'bonds', 'etfs', 'currencies', 'futures']:
         for item in getattr(instruments, method)(instrument_status=InstrumentStatus.INSTRUMENT_STATUS_ALL).instruments:
         #for item in getattr(instruments, method)().instruments: #instrument_status=InstrumentStatus.INSTRUMENT_STATUS_ALL
-          if method == 'shares' and item.ticker == 'MOEX':
-            print(item)
           l.append({
             'ticker': item.ticker,
             'figi': item.figi,
@@ -227,8 +225,6 @@ class InstrumentsService:
       df = pd.DataFrame(l)
 
       self.instruments = df
-
-      print(self.instruments)
 
   def find_figi_by_ticker(self, ticker_obj: TickerData):
     # get figis by ticker and type
