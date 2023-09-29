@@ -86,8 +86,6 @@ class TickerDataDataframe:
   def last_candle_date(self):
     return self.last_candle['date']
 
-
-
 class TickerData:
   def __init__(self, ticker=None, ticker_type=None, figi=None):
     self._ticker = ticker
@@ -201,7 +199,7 @@ class TickerData:
     _df = TickerDataDataframe(self.path)
     _df.save_df_to_file(df)
     self.load_df()
-
+ 
 class InstrumentsService:
   def __init__(self, token):
     self.token = token
@@ -216,16 +214,21 @@ class InstrumentsService:
       for method in ['shares', 'bonds', 'etfs', 'currencies', 'futures']:
         for item in getattr(instruments, method)(instrument_status=InstrumentStatus.INSTRUMENT_STATUS_ALL).instruments:
         #for item in getattr(instruments, method)().instruments: #instrument_status=InstrumentStatus.INSTRUMENT_STATUS_ALL
+          if method == 'shares' and item.ticker == 'MOEX':
+            print(item)
           l.append({
             'ticker': item.ticker,
             'figi': item.figi,
             'type': method,
             'name': item.name,
+            'lot': item.lot,
           })
  
       df = pd.DataFrame(l)
 
       self.instruments = df
+
+      print(self.instruments)
 
   def find_figi_by_ticker(self, ticker_obj: TickerData):
     # get figis by ticker and type
@@ -247,6 +250,13 @@ class InstrumentsService:
       return None
     ticker_obj.ticker_type = ticker_types[0]
     return ticker_obj
+
+  def find_lot_by_figi(self, figi):
+    # get lot by figi
+    lots = self.instruments[self.instruments["figi"] == figi]["lot"].tolist()
+    if len(lots) == 0:
+      return None
+    return lots[0]
 
 class DataLoader:
   def __init__(self, token):
